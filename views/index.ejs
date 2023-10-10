@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ColorHub</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.png">
+  <link rel="stylesheet" type="text/css" href="/styles.css">
+  <meta name="google-site-verification" content="ql9XRfLBknSViYAVgMCUVt9JWXMkbtYjRwFv3Mqig7I" />
+  <style>
+    .color-picker {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .color-picker .color-box {
+      width: 51px;
+      height: 51px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .palette-search {
+      display: none;
+      margin-top: 10px;
+    }
+
+    #suggestions::-webkit-scrollbar {
+      width: 5px; /* Adjust width of scrollbar */
+    }
+    #suggestions::-webkit-scrollbar-track {
+      background: #f1f1f1; /* Track color */
+    }
+    #suggestions::-webkit-scrollbar-thumb {
+      background: #888; /* Scroll handle color */
+    }
+    #suggestions::-webkit-scrollbar-thumb:hover {
+      background: #555; /* Scroll handle color when hovered */
+    }
+
+    #suggestions {
+      width: 300px;
+      background-color: #111;
+      /* Updated style additions */
+      list-style: none;
+      padding-left: 0;
+      margin-top: -15px;
+      z-index: 1;
+      max-height: calc(15 * 1.6em); /* Assuming each suggestion item has a height of 1.6em */
+      overflow-y: scroll; /* Add scrollbar */
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin-left: auto;
+      margin-right: auto;
+      border: none; 
+    }
+
+    #suggestions.show-border {
+      border: 1px solid #888; 
+    }
+
+    .suggestion-item {
+      padding: 8px;
+      cursor: pointer;
+      /* Added a transition for the background color change */
+      transition: background-color 0.3s ease;
+    }
+
+    .suggestion-item:hover {
+      background-color: #808080;
+    }
+
+    #color-boxzz {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      margin-left: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .search-input {
+      position: relative;
+      display: inline-block;
+    }
+    .search-input span#color-boxzz {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .base-biggie-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .main-link {
+      text-align: right;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .left-content {
+      flex-grow: 1;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jscolor/2.4.5/jscolor.min.js"></script>
+  <script>
+    function toggleSearchMode() {
+      const colorForm = document.getElementById('search-color-form');
+      const paletteForm = document.getElementById('search-palette-form');
+      if (colorForm.style.display === 'none') {
+        colorForm.style.display = 'block';
+        paletteForm.style.display = 'none';
+      } else {
+        colorForm.style.display = 'none';
+        paletteForm.style.display = 'block';
+      }
+    }
+
+    function goToColorPage(color) {
+      if (color) {
+        window.location.href = '/color/' + encodeURIComponent(color);
+      }
+    }
+
+    function searchPalette() {
+      const paletteName = document.getElementById('paletteName').value;
+      if (paletteName) {
+        window.location.href = '/palettes?name=' + encodeURIComponent(paletteName);
+      }
+    }
+
+    // Add event listeners to form to submit on enter key press
+    document.getElementById('search-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission
+      const colorNameInput = document.getElementById('colorName');
+      const paletteNameInput = document.getElementById('paletteName');
+      if (colorNameInput.value) {
+        goToColorPage(colorNameInput.value);
+      } else if (paletteNameInput.value) {
+        searchPalette();
+      }
+    });
+  </script>
+</head>
+<body>
+  <center>
+    <p>&nbsp</p>
+    <p>&nbsp</p>
+    <div class="<%= theme %>">
+      <h1>ColorHub</h1>
+      <p>
+        <label>
+          <input type="radio" name="searchType" id="color-search-radio" value="color" checked onchange="toggleSearchMode()">
+          Search Color
+        </label>
+        <label>
+          <input type="radio" name="searchType" id="palette-search-radio" value="palette" onchange="toggleSearchMode()">
+          Search Palette
+        </label>
+      </p>
+      <form action="/search-color" method="post" id="search-color-form">
+        <p>
+          <label class="search-input">
+            <input type="text" name="color" id="colorName" placeholder="Search Name or Conversion"><span id="color-boxzz"></span>
+            <div id="suggestions"></div>
+          </label>
+        </p>
+      </form>
+      <form action="/search-palette" method="post" id="search-palette-form" style="display: none;">
+        <p>
+          <label>
+            <input type="text" name="palette" id="paletteName" placeholder="Search Palette Name">
+          </label>
+        </p>
+      </form>
+      <!-- The search button is hidden with CSS -->
+      <p>
+        <button onclick="window.location.href = '/random-color'" class="random-color-button">Random Color</button>
+        <button onclick="window.location.href = '/random-palette'" class="random-color-button">Random Palette</button>
+      </p>
+      <div class="base-biggie-container">
+        <div class="biggie" style="position: relative; overflow: hidden; margin-top: 7px; width: 240px; height: 217px; margin-left: -12px;">
+          <button class='jscolor' id="colorPickerz" onchange="redirectToColor(this.jscolor)"></button>
+          <div style="position: absolute; top: 5px; right: -25px; transform: rotate(45deg); 
+                      text-shadow: 1px 1px 3px rgba(0,0,0,.5);
+                      color: white;
+                      font-size: 13px;
+                      font-weight: bold;
+                      padding: 5px 20px 5px 50px;
+                      background-color: rgba(0,0,0,.5);
+                      pointer-events: none; 
+                      border: 1px solid transparent;">
+            Tap Me!
+          </div>
+        </div>
+        <p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+        <div class="color-picker" style="margin-top: 7px;">
+          <% var rowSize = 4; %>
+          <% for (var i = 0; i < colorz.length; i += rowSize) { %>
+            <div class="color-row">
+              <% var rowColorz = colorz.slice(i, i + rowSize); %>
+              <% rowColorz.forEach(function(color) { %>
+                <a href="/color/<%= encodeURIComponent(color) %>">
+                  <div class="color-box" style="background-color: <%= color %>;"></div>
+                </a>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    </div>
+    <p>
+    <div class="main-links">
+      <a href="/img-to-color" class="main-link">
+        <span class="text">Image to Color</span>
+      </a>
+      <a href="/playground" class="main-link">
+        <span class="text">Playground</span>
+      </a>
+      <a href="/palettes" class="main-link">
+        <span class="text">Create Palette</span>
+      </a>
+      <a href="/trending" class="main-link">
+        <span class="text">Trending Colors</span>
+      </a>
+      <a href="/auto" class="main-link">
+        <span class="text">Auto</span>
+      </a>
+    </div>
+    <div class="icons-container">
+      <a href="https://www.producthunt.com/products/colorhub-2?utm_source=badge-follow&utm_medium=badge&utm_souce=badge-colorhub&#0045;2" target="_blank">
+        <img src="https://api.producthunt.com/widgets/embed-image/v1/follow.svg?product_id=543224&theme=dark" alt="ColorHub - The new best website on the internet for finding colors! | Product Hunt" style="width: 250px; height: 60px;" width="250" height="60" />
+      </a>
+      <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="vvcdev" data-color="#221d21" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#ffffff" data-font-color="#ffffff" data-coffee-color="#FFDD00"></script>
+      <script src="/jscolor.js"></script>
+      <script src="/jscolor2.js"></script>
+      <script>
+        const colorNameInput = document.getElementById('colorName');
+        const suggestionsContainer = document.getElementById('suggestions');
+        const colorBox = document.getElementById('color-boxzz');
+
+        colorNameInput.addEventListener('input', async function () {
+          const inputValue = colorNameInput.value;
+          if (inputValue === "") {
+            suggestionsContainer.innerHTML = "";
+            suggestionsContainer.style.display = 'none';
+            colorBox.style.backgroundColor = 'transparent';
+            return;
+          }
+          try {
+            const response = await fetch(`/color-suggestions?inputColorName=${inputValue}`);
+            const data = await response.json();
+
+            suggestionsContainer.innerHTML = '';
+            data.suggestions.forEach(suggestion => {
+              const listItem = document.createElement('div');
+              listItem.textContent = suggestion;
+              listItem.className = 'suggestion-item';
+              listItem.addEventListener('mouseover', async () => { 
+                const response = await fetch(`/color-hex?colorName=${suggestion}`);
+                const hexData = await response.json();
+                colorBox.style.backgroundColor = hexData.hex || 'transparent';
+              });
+              listItem.addEventListener('click', async () => {
+                colorNameInput.value = suggestion;
+                suggestionsContainer.style.display = 'none';
+
+                // Fetch hex code for the selected color
+                const hexResponse = await fetch(`/color-hex?colorName=${suggestion}`);
+                const hexData = await hexResponse.json();
+                colorBox.style.backgroundColor = hexData.hex;
+
+                // Submit the color search form
+                document.querySelector('#search-color-form').submit();
+              });
+              suggestionsContainer.appendChild(listItem);
+            });
+            if (data.suggestions.length > 0) {
+              suggestionsContainer.style.display = 'block';
+            } else {
+              suggestionsContainer.style.display = 'none';
+            }
+          } catch (error) {
+            console.error('Error fetching suggestions:', error);
+          }
+        });
+
+        // Add "keyup" event listener for updating color box
+        colorNameInput.addEventListener('keyup', async function() {
+          const inputValue = colorNameInput.value;
+          if (inputValue !== "") {
+            try {
+              const hexResponse = await fetch(`/color-hex?colorName=${inputValue}`);
+              const hexData = await hexResponse.json();
+              colorBox.style.backgroundColor = hexData.hex || 'transparent';
+            } catch (error) {
+              console.error('Error fetching hex:', error);
+            }
+          } else {
+            colorBox.style.backgroundColor = 'transparent';
+          }
+        });
+      </script>
+      <script>
+        document.getElementById('colorName').addEventListener('input', function() {
+          const suggestionsElement = document.getElementById('suggestions');
+          if (document.getElementById('colorName').value === '') {
+            suggestionsElement.classList.remove('show-border');
+          } else {
+            suggestionsElement.classList.add('show-border');
+          }
+        });
+
+        jscolor.presets.default = {
+          backgroundColor: '#111111'
+        };
+      </script>
+    </div>
+  </center>
+</body>
+</html>
